@@ -22,10 +22,42 @@
 
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs?ref=nixos-unstable";
-    emacs-overlay = {
-      url = "github:nix-community/emacs-overlay";
+
+    hermes = {
+      url = "github:pandecode/hermes";
+      # inputs.nixpkgs.follows = "nixpkgs";
+    };
+    libys = {
+      url = "github:pandecode/libys";
+      # inputs.nixpkgs.follows = "nixpkgs";
+    };
+
+    niri = {
+      url = "github:sodiboo/niri-flake";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+
+    ghostty = {
+      url = "github:ghostty-org/ghostty";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
+    nix-alien = {
+      url = "github:thiagokokada/nix-alien";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
+    zen-browser = {
+      url = "github:0xc000022070/zen-browser-flake";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
+    zig-overlay = {
+      url = "github:mitchellh/zig-overlay";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
+    boomer.url = "github:nilp0inter/boomer";
   };
 
   outputs = {self, ...} @ inputs: rec {
@@ -33,7 +65,9 @@
 
     checks = {};
     lib = (import ./lib.nix) inputs.nixpkgs;
-    packages = lib.forAllSystemsPkgs (import ./derivations/default.nix);
+    pkgLib = import ./lib.nix;
+
+    packages = lib.forAllSystems ((import ./packages.nix) (self // {}));
 
     templates = {
       default = {

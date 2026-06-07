@@ -10,6 +10,7 @@ in
       #  "aarch64-darwin"
     ];
 
+    # i want a function that consumes an instance of pkgs(with system passed to it) and emits attribute set,
     forAllSystemsPkgs = fn:
       forAllSystems (system: let
         pkgs = nixpkgs.legacyPackages.${system};
