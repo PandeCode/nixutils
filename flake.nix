@@ -62,6 +62,7 @@
 
   outputs = {self, ...} @ inputs: rec {
     nix.nixPath = ["nixpkgs=${self.inputs.nixpkgs}"];
+    inherit inputs;
 
     checks = {};
     lib = (import ./lib.nix) inputs.nixpkgs;
