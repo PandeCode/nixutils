@@ -1,0 +1,40 @@
+name: "Build and Push to Cachix"
+
+on:
+  push:
+    branches:
+      - main # only build on push to main
+  pull_request: # still build for all PRs
+
+jobs:
+  build:
+    if: >
+      !(
+        (github.event_name == 'push' &&
+         startsWith(github.event.head_commit.message, 'nobuild:')) ||
+        (github.event_name == 'pull_request' &&
+         startsWith(github.event.pull_request.title, 'nobuild:'))
+      )
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Nix
+        uses: cachix/install-nix-action@v31
+        with:
+          nix_path: nixpkgs=channel:nixos-unstable
+          extra_nix_config: |
+            experimental-features = nix-command flakes
+
+      - name: Setup Cachix
+        uses: cachix/cachix-action@v14
+        with:
+          name: charon
+          authToken: "${{ secrets.CACHIX_AUTH_TOKEN }}"
+
+      - name: Build flake output
+        run: nix build --accept-flake-config --keep-going
+
+      - name: Check devShell
+        run: nix develop --accept-flake-config --keep-going  --command echo OK
