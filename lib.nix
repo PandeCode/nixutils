@@ -41,7 +41,7 @@ in
         setEnvFlags ++ prefixEnvFlags ++ argFlags;
     in
       pkgs.symlinkJoin {
-        name = "${pkg.pname or pkg.name}-wrapped";
+        name = config.name or "${pkg.pname or pkg.name}-wrapped";
         paths = [pkg];
         nativeBuildInputs = [pkgs.makeWrapper];
         postBuild = let
