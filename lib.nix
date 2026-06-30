@@ -35,12 +35,12 @@ in
         mkSetEnvFlag = name: value: ["--set" name value];
 
         setEnvFlags = flatten (mapAttrsToList mkSetEnvFlag (
-          if (builtins.hasAttr "set")
+          if (envs ? "set")
           then envs.set
           else []
         ));
         prefixEnvFlags = flatten (mapAttrsToList mkPrefixEnvFlag (
-          if (builtins.hasAttr "prefix")
+          if (envs ? "prefix")
           then envs.prefix
           else []
         ));
