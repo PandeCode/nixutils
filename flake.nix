@@ -1,13 +1,9 @@
 {
   description = "lib and project templates";
 
-  nixConfig = {
-    experimental-features = ["nix-command" "flakes" "pipe-operators"];
-  };
+  nixConfig = {experimental-features = ["nix-command" "flakes" "pipe-operators"];};
 
-  inputs = {
-    nixpkgs.url = "github:nixos/nixpkgs?ref=nixos-unstable";
-  };
+  inputs.nixpkgs.url = "github:nixos/nixpkgs?ref=nixos-unstable";
 
   outputs = {self, ...} @ inputs: rec {
     nix.nixPath = ["nixpkgs=${self.inputs.nixpkgs}"];
