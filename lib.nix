@@ -37,12 +37,12 @@ in
         setEnvFlags = flatten (mapAttrsToList mkSetEnvFlag (
           if (envs ? "set")
           then envs.set
-          else []
+          else {}
         ));
         prefixEnvFlags = flatten (mapAttrsToList mkPrefixEnvFlag (
           if (envs ? "prefix")
           then envs.prefix
-          else []
+          else {}
         ));
         argFlags = concatMap (arg: ["--add-flags" arg]) args;
       in
