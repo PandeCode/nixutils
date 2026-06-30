@@ -34,8 +34,16 @@ in
         mkPrefixEnvFlag = name: value: ["--prefix" name ":" value];
         mkSetEnvFlag = name: value: ["--set" name value];
 
-        setEnvFlags = flatten (mapAttrsToList mkSetEnvFlag envs.set);
-        prefixEnvFlags = flatten (mapAttrsToList mkPrefixEnvFlag envs.prefix);
+        setEnvFlags = flatten (mapAttrsToList mkSetEnvFlag (
+          if (builtins.hasAttr "set")
+          then envs.set
+          else []
+        ));
+        prefixEnvFlags = flatten (mapAttrsToList mkPrefixEnvFlag (
+          if (builtins.hasAttr "prefix")
+          then envs.prefix
+          else []
+        ));
         argFlags = concatMap (arg: ["--add-flags" arg]) args;
       in
         setEnvFlags ++ prefixEnvFlags ++ argFlags;
