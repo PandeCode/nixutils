@@ -1,5 +1,5 @@
 {
-  description = "wgpu-native stuff";
+  description = "default_project";
 
   nixConfig = {
     experimental-features = ["nix-command" "flakes"];
@@ -29,6 +29,8 @@
       url = "github:zigtools/zls";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+
+    treefmt-nix.url = "github:numtide/treefmt-nix";
   };
 
   outputs = {self, ...} @ inputs: let
@@ -101,14 +103,14 @@
     treefmtEval = iterSys ({pkgs, ...}:
       inputs.treefmt-nix.lib.evalModule pkgs (_: {
         projectRootFile = "flake.nix";
-        programs.black.enable = true;
+        programs.zig.enable = true;
       }));
   in {
     nix.nixPath = ["nixpkgs=${inputs.nixpkgs}"];
     self.submodules = true;
 
-    formatter = iterSys (_system: pkgs: treefmtEval.${pkgs.system}.config.build.wrapper);
-    checks = iterSys (_system: pkgs: {
+    formatter = iterSys ({pkgs, ...}: treefmtEval.${pkgs.system}.config.build.wrapper);
+    checks = iterSys ({pkgs, ...}: {
       formatting = inputs.treefmtEval.${pkgs.system}.config.build.check self;
     });
 
@@ -167,10 +169,9 @@
       ];
     });
     homeConfigurations = iterSys ({pkgs, ...}: {
-      environment.systemPackages = [
+      home.packages = [
         inputs.self.packages.${pkgs.system}.default
       ];
     });
-    # checks = forAllSystems ((import ./nix/checks.nix) self');
   };
 }

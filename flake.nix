@@ -14,28 +14,28 @@
 
     templates = {
       default = {
-        path = ./default;
-        description = "i dont understand";
+        path = ./templates/nixflake;
+        description = "Default flake for modification";
       };
 
-      rust = {
-        path = ./rust;
-        description = "i dont understand";
-      };
-
-      c = {
-        path = ./c;
-        description = "clang clangd gdb|rr valgrind";
-      };
-
-      cpp = {
-        path = ./cpp;
-        description = "clang clangd gdb|rr valgrind";
-      };
-
+      # rust = {
+      #   path = ./rust;
+      #   description = "i dont understand";
+      # };
+      #
+      # c = {
+      #   path = ./c;
+      #   description = "clang clangd gdb|rr valgrind";
+      # };
+      #
+      # cpp = {
+      #   path = ./cpp;
+      #   description = "clang clangd gdb|rr valgrind";
+      # };
+      #
       zig = {
         path = ./templates/zig/default_project;
-        description = "Zig project with flake devshell";
+        description = "Zig project with flake devshell, package, {nixos,home}Module ";
         welcomeText = ''
           # Run
           sed -i \'\' -e 's/myproject/default_project/g' $(find . -type f)
