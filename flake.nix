@@ -34,7 +34,7 @@
       };
 
       zig = {
-        path = ./zig/default_project;
+        path = ./templates/zig/default_project;
         description = "Zig project with flake devshell";
         welcomeText = ''
           # Run
