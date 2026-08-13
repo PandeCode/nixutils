@@ -34,12 +34,11 @@
       };
 
       zig = {
-        path = ./zig;
+        path = ./zig/default_project;
         description = "Zig project with flake devshell";
         welcomeText = ''
           # Run
-          find project_name -type f -exec sed -i 's/__template__/project_name/g' {} +
-          cd project_name
+          sed -i \'\' -e 's/myproject/default_project/g' $(find . -type f)
           zig init -m
         '';
       };

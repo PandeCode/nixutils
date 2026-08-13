@@ -1,0 +1,176 @@
+{
+  description = "wgpu-native stuff";
+
+  nixConfig = {
+    experimental-features = ["nix-command" "flakes"];
+    accept-flake-config = true;
+    show-trace = true;
+    auto-optimise-store = true;
+
+    extra-substituters = [
+      "https://nix-community.cachix.org"
+      "https://charon.cachix.org"
+    ];
+    extra-trusted-public-keys = [
+      "nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs="
+      "charon.cachix.org-1:epdetEs1ll8oi8DT8OG2jEA4whj3FDbqgPFvapEPbY8="
+    ];
+  };
+
+  inputs = {
+    nixpkgs.url = "github:nixos/nixpkgs?ref=nixos-unstable";
+
+    zig-overlay = {
+      url = "github:mitchellh/zig-overlay";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
+    zls = {
+      url = "github:zigtools/zls";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+  };
+
+  outputs = {self, ...} @ inputs: let
+    self' =
+      self
+      // {
+        # overlays = (import ./nix/overlays.nix) inputs;
+      };
+
+    iterSys = final:
+      (
+        inputs.nixpkgs.lib.genAttrs
+        inputs.nixpkgs.lib.systems.flakeExposed # this has everything
+        # [ "x86_64-linux" "aarch64-linux" "x86_64-darwin" "aarch64-darwin" ]
+      ) ((
+          self: system: let
+            pkgs = self.inputs.nixpkgs.legacyPackages.${system};
+          in
+            final {inherit pkgs;}
+        )
+        self');
+
+    name = "default_project";
+    meta' = pkgs:
+      with pkgs; {
+        description = "default_project";
+        longDescription = ''
+          default_project in Zig
+        '';
+        homepage = "https://codeberg.org/d3bug64/default_project";
+        license = lib.licenses.gpl3;
+        # maintainers = with lib.maintainers; [];
+        platforms = lib.platforms.linux;
+      };
+
+    zig' = pkgs:
+      pkgs.zig_0_16;
+    # self.inputs.zig-overlay.packages.${pkgs.stdenv.hostPlatform.system}."0.16.0".overrideAttrs {};
+    # self.inputs.zig-overlay.packages.${pkgs.stdenv.hostPlatform.system}."master-2026-08-04";
+
+    zls' = pkgs:
+      pkgs.zls_0_16;
+    #  self.inputs.zls.packages.${pkgs.stdenv.hostPlatform.system}.default;
+
+    buildInputs' = pkgs:
+      with pkgs; [
+      ];
+
+    nativeBuildInputs' = pkgs:
+      with pkgs; [
+        (zig' pkgs)
+        pkg-config
+      ];
+
+    devInputs' = pkgs:
+      with pkgs; [
+        (zls' pkgs)
+
+        ccls
+        bear
+        gdb
+      ];
+
+    env = pkgs:
+      with pkgs; {
+        LD_LIBRARY_PATH = lib.makeLibraryPath [];
+        LIBCLANG_PATH = "${llvmPackages.libclang.lib}/lib";
+      };
+
+    treefmtEval = iterSys ({pkgs, ...}:
+      inputs.treefmt-nix.lib.evalModule pkgs (_: {
+        projectRootFile = "flake.nix";
+        programs.black.enable = true;
+      }));
+  in {
+    nix.nixPath = ["nixpkgs=${inputs.nixpkgs}"];
+    self.submodules = true;
+
+    formatter = iterSys (_system: pkgs: treefmtEval.${pkgs.system}.config.build.wrapper);
+    checks = iterSys (_system: pkgs: {
+      formatting = inputs.treefmtEval.${pkgs.system}.config.build.check self;
+    });
+
+    devShells = iterSys (
+      {pkgs, ...}: {
+        default = pkgs.mkShell ({
+            packages =
+              (buildInputs' pkgs)
+              ++ (nativeBuildInputs' pkgs)
+              ++ (devInputs' pkgs);
+          }
+          // (env pkgs));
+      }
+    );
+
+    packages = iterSys (
+      {pkgs, ...}: let
+        meta = meta' pkgs;
+      in {
+        default = pkgs.stdenv.mkDerivation {
+          inherit name meta;
+
+          src = ./.;
+
+          buildInputs =
+            [
+              pkgs.autoPatchelfHook
+              pkgs.makeWrapper
+            ]
+            ++ (buildInputs' pkgs);
+          nativeBuildInputs = nativeBuildInputs' pkgs;
+
+          buildPhase = ''
+            ZIG_GLOBAL_CACHE_DIR=$PWD/zig-cache zig build --release=fast --prefix $PWD/zig-out
+          '';
+
+          installPhase = ''
+            mkdir -p $out
+            mv $PWD/zig-out/* $out
+          '';
+
+          postFixup = ''
+            wrapProgram $out/bin/${name} \
+              --set LD_LIBRARY_PATH ${pkgs.lib.makeLibraryPath [pkgs.vulkan-loader]} \
+              --set PATH ${pkgs.lib.makeBinPath [pkgs.zenity]}
+          '';
+
+          LD_LIBRARY_PATH = pkgs.lib.makeLibraryPath [pkgs.vulkan-loader];
+        };
+      }
+    );
+
+    nixosModules = iterSys ({pkgs, ...}: {
+      environment.systemPackages = [
+        inputs.self.packages.${pkgs.system}.default
+      ];
+    });
+    homeConfigurations = iterSys ({pkgs, ...}: {
+      environment.systemPackages = [
+        inputs.self.packages.${pkgs.system}.default
+      ];
+    });
+    # checks = forAllSystems ((import ./nix/checks.nix) self');
+  };
+}

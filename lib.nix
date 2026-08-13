@@ -16,6 +16,12 @@ in
         pkgs = nixpkgs.legacyPackages.${system};
       in
         fn pkgs);
+
+    is = attrSet: attr:
+      if (attr ? attrSet && builtins.typeOf (builtins.getAttr attr attrSet) == "bool")
+      then (builtins.getAttr attr attrSet)
+      else false;
+    andSet = attrSet: list: builtins.foldl' (acc: el: (is attrSet el) && acc) list;
   }
   // (let
     pkgs = nixpkgs;
