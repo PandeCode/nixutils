@@ -111,7 +111,7 @@
 
     formatter = iterSys ({pkgs, ...}: treefmtEval.${pkgs.system}.config.build.wrapper);
     checks = iterSys ({pkgs, ...}: {
-      formatting = inputs.treefmtEval.${pkgs.system}.config.build.check self;
+      formatting = treefmtEval.${pkgs.system}.config.build.check self;
     });
 
     devShells = iterSys (

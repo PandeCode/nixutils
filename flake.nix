@@ -36,11 +36,15 @@
       zig = {
         path = ./templates/zig/default_project;
         description = "Zig project with flake devshell, package, {nixos,home}Module ";
-        welcomeText = ''
-          # Run
-          sed -i \'\' -e 's/myproject/default_project/g' $(find . -type f)
-          zig init -m
-        '';
+        welcomeText =
+          ''
+            # Run
+          ''
+          + "sed -i '' -e 's/myproject/default_project/g' $(find . -type f);"
+          + ''
+            direnv allow;
+            zig init -m;
+          '';
       };
     };
   };
