@@ -151,14 +151,6 @@
             mkdir -p $out
             mv $PWD/zig-out/* $out
           '';
-
-          postFixup = ''
-            wrapProgram $out/bin/${name} \
-              --set LD_LIBRARY_PATH ${pkgs.lib.makeLibraryPath [pkgs.vulkan-loader]} \
-              --set PATH ${pkgs.lib.makeBinPath [pkgs.zenity]}
-          '';
-
-          LD_LIBRARY_PATH = pkgs.lib.makeLibraryPath [pkgs.vulkan-loader];
         };
       }
     );
