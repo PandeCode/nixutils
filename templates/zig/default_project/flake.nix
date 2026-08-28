@@ -77,6 +77,9 @@
 
     buildInputs' = pkgs:
       with pkgs; [
+        (enableDebugging (glibc.overrideAttrs (o: {
+          preConfigure = o.preConfigure + ''export CFLAGS="-Wno-error=maybe-uninitialized $CFLAGS"'';
+        })))
       ];
 
     nativeBuildInputs' = pkgs:
