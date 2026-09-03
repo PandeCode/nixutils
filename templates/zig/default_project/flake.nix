@@ -20,15 +20,15 @@
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs?ref=nixos-unstable";
 
-    zig-overlay = {
-      url = "github:mitchellh/zig-overlay";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
-
-    zls = {
-      url = "github:zigtools/zls";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
+    # zig-overlay = {
+    #   url = "github:mitchellh/zig-overlay";
+    #   inputs.nixpkgs.follows = "nixpkgs";
+    # };
+    #
+    # zls = {
+    #   url = "github:zigtools/zls";
+    #   inputs.nixpkgs.follows = "nixpkgs";
+    # };
 
     treefmt-nix.url = "github:numtide/treefmt-nix";
   };
@@ -77,9 +77,9 @@
 
     buildInputs' = pkgs:
       with pkgs; [
-        (enableDebugging (glibc.overrideAttrs (o: {
-          preConfigure = o.preConfigure + ''export CFLAGS="-Wno-error=maybe-uninitialized $CFLAGS"'';
-        })))
+        # (enableDebugging (glibc.overrideAttrs (o: {
+        #   preConfigure = o.preConfigure + ''export CFLAGS="-Wno-error=maybe-uninitialized $CFLAGS"'';
+        # })))
       ];
 
     nativeBuildInputs' = pkgs:
@@ -91,6 +91,8 @@
     devInputs' = pkgs:
       with pkgs; [
         (zls' pkgs)
+
+        zon2nix
 
         ccls
         bear
@@ -133,28 +135,17 @@
       {pkgs, ...}: let
         meta = meta' pkgs;
       in {
-        default = pkgs.stdenv.mkDerivation {
+        default = pkgs.stdenv.mkDerivation (finalAttrs: {
           inherit name meta;
-
           src = ./.;
 
-          buildInputs =
-            [
-              pkgs.autoPatchelfHook
-              pkgs.makeWrapper
-            ]
-            ++ (buildInputs' pkgs);
+          buildInputs = buildInputs' pkgs;
           nativeBuildInputs = nativeBuildInputs' pkgs;
 
-          buildPhase = ''
-            ZIG_GLOBAL_CACHE_DIR=$PWD/zig-cache zig build --release=fast --prefix $PWD/zig-out
-          '';
-
-          installPhase = ''
-            mkdir -p $out
-            mv $PWD/zig-out/* $out
-          '';
-        };
+          zigBuildFlags = ["--system" "${finalAttrs.deps}"];
+          strictDeps = true;
+          deps = pkgs.callPackage (import ./deps.nix) {};
+        });
       }
     );
 

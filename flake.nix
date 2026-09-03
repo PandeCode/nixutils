@@ -40,10 +40,12 @@
           ''
             # Run
           ''
-          + "sed -i '' -e 's/myproject/default_project/g' $(find . -type f);"
+          + "sed -i '' -e 's/project/default_project/g' $(find . -type f);"
           + ''
+            echo use flake > .envrc;
             direnv allow;
             zig init -m;
+            zon2nix > deps.nix;
           '';
       };
     };
