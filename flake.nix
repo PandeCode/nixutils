@@ -1,53 +1,11 @@
 {
-  description = "lib and project templates";
+  description = "personal flake utils and nix experiments";
 
-  nixConfig = {experimental-features = ["nix-command" "flakes" "pipe-operators"];};
+  outputs = inputs: import ./flake inputs;
 
-  inputs.nixpkgs.url = "https://channels.nixos.org/nixos-unstable/nixexprs.tar.zst";
-
-  outputs = {self, ...} @ inputs: rec {
-    nix.nixPath = ["nixpkgs=${self.inputs.nixpkgs}"];
-    inherit inputs;
-    checks = {};
-    lib = (import ./lib.nix) inputs.nixpkgs;
-    pkgLib = import ./lib.nix;
-
-    templates = {
-      default = {
-        path = ./templates/nixflake;
-        description = "Default flake for modification";
-      };
-
-      # rust = {
-      #   path = ./rust;
-      #   description = "i dont understand";
-      # };
-      #
-      # c = {
-      #   path = ./c;
-      #   description = "clang clangd gdb|rr valgrind";
-      # };
-      #
-      # cpp = {
-      #   path = ./cpp;
-      #   description = "clang clangd gdb|rr valgrind";
-      # };
-      #
-      zig = {
-        path = ./templates/zig/default_project;
-        description = "Zig project with flake devshell, package, {nixos,home}Module ";
-        welcomeText =
-          ''
-            # Run
-          ''
-          + "sed -i '' -e 's/project/default_project/g' $(find . -type f);"
-          + ''
-            echo use flake > .envrc;
-            direnv allow;
-            zig init -m;
-            zon2nix > deps.nix;
-          '';
-      };
-    };
+  inputs = {
+    # lib comes from here, and the formatter, checks and dev shell of this
+    # repo need packages. consumers should make it follow their nixpkgs
+    nixpkgs.url = "https://channels.nixos.org/nixos-unstable/nixexprs.tar.zst";
   };
 }
