@@ -5,6 +5,7 @@ lib.fixedPoints.makeExtensible (final: {
   attrs = import ./attrs.nix { inherit lib; };
   systems = import ./systems.nix { inherit lib; };
   wrappers = import ./wrappers.nix { inherit lib; };
+  zon = import ./zon.nix { inherit lib; };
   # keep-sorted end
 
   treefmtModule = ./treefmt.nix;
@@ -17,4 +18,5 @@ lib.fixedPoints.makeExtensible (final: {
     forSystems
     ;
   inherit (final.wrappers) wrapProgram;
+  inherit (final.zon) toZON;
 })

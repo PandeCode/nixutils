@@ -47,6 +47,23 @@ lib.debug.runTests {
     };
   };
 
+  testToZON = {
+    expr = utils.toZON {
+      gap = 9;
+      width = 0.5;
+      side = utils.zon.enum "left";
+      "bad-name" = null;
+      error = true;
+      argv = [
+        "sh"
+        "-c"
+        ''echo "hi"''
+      ];
+      empty = { };
+    };
+    expected = ''.{ .argv = .{ "sh", "-c", "echo \"hi\"", }, .@"bad-name" = null, .empty = .{}, .@"error" = true, .gap = 9, .side = .left, .width = 0.500000, }'';
+  };
+
   testWrapProgramFlags = {
     expr = map (flag: lib.strings.hasInfix flag wrapped.drvAttrs.buildCommand) [
       "--set GREETING hi"
