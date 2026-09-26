@@ -36,6 +36,7 @@ experiments.
 | `forAllPkgs nixpkgs fn`              | `fn pkgs` for each default system, from that nixpkgs   |
 | `wrapProgram pkgs package { ... }`   | wrap the main program with `envs.set`, `envs.prefix`, `args` |
 | `forceAttrs attrs`                   | `mkForce` every value                                  |
+| `toZON value`                        | nix to ZON (zig object notation); `zon.enum "x"` is `.x` |
 | `treefmtModule`                      | treefmt config shared by my repos                      |
 
 The lib is built with `makeExtensible`, so it can be extended:

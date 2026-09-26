@@ -18,6 +18,31 @@ in
       "nixutils lib tests failed:\n${lib.generators.toPretty { } failures}";
     pkgs.runCommandLocal "nixutils-lib-tests" { } "touch $out";
 
+  # zig itself parses what toZON writes
+  zon-parses =
+    let
+      sample = pkgs.writeText "sample.zon" (
+        self.lib.toZON {
+          name = "rill";
+          gaps = [
+            9
+            (-1)
+            0.5
+          ];
+          center = self.lib.zon.enum "always";
+          "not an id" = ''
+            quote " backslash \ newline
+          '';
+          cursor = null;
+        }
+      );
+    in
+    pkgs.runCommandLocal "nixutils-zon-parses" { nativeBuildInputs = [ pkgs.zig ]; } ''
+      cp ${sample} sample.zon
+      ZIG_GLOBAL_CACHE_DIR=$TMPDIR zig fmt sample.zon
+      touch $out
+    '';
+
   wrap-program =
     let
       show = pkgs.writeShellScriptBin "show" ''echo "$GREETING $*"'';
